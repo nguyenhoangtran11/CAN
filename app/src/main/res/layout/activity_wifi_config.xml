@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include
+        android:id="@+id/title_bar"
+        layout="@layout/toolbar" />
+
+    <include
+        android:id="@+id/layout_wifi_config"
+        layout="@layout/content_wifi_config" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

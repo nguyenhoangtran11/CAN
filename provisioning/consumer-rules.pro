@@ -1,0 +1,11 @@
+
+-dontwarn com.nht.provisioning.**
+-dontwarn espressif.**
+-keep class com.nht.provisioning.** {*;}
+-keepclassmembers class com.nht.provisioning.** {*;}
+-keep class espressif.** {*;}
+-keepclassmembers class espressif.** {*;}
+-keep interface com.nht.provisioning.** {*;}
+-keep interface espressif.** {*;}
+-keep public enum com.nht.provisioning.** {*;}
+-keep public enum espressif.** {*;}

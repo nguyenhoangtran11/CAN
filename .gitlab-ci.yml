@@ -1,0 +1,120 @@
+variables:
+  JENKINS_URL: "https://pn-jenkins.espressif.cn:8443/job/qa_phone"
+  JENKINS_JOB: "Android-Provisioning-App"
+  JENKINS_TRIGGER_TOKEN: "android_prov_app_token"
+
+stages:
+  - trigger-and-wait-jenkins
+
+trigger_wait_jenkins:
+  stage: trigger-and-wait-jenkins
+  tags:
+    - test
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl bash jq
+  script:
+    - |
+      set -e  # Exit on any error
+      
+      echo "🚀 Triggering Jenkins job..."
+      
+      # 1. Handle Initial Jenkins trigger failure
+      HTTP_STATUS=$(curl -X POST "${JENKINS_URL}/job/${JENKINS_JOB}/buildWithParameters?token=${JENKINS_TRIGGER_TOKEN}&branch=${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}" \
+        --user "${JENKINS_USER}:${JENKINS_API_TOKEN}" \
+        --write-out "%{http_code}" \
+        --silent \
+        --output /dev/null)
+      
+      if [[ "$HTTP_STATUS" -lt 200 || "$HTTP_STATUS" -ge 300 ]]; then
+        echo "❌ Failed to trigger Jenkins job. HTTP status: $HTTP_STATUS"
+        echo "Please check Jenkins URL, credentials, and job configuration."
+        exit 1
+      fi
+      
+      echo "✅ Jenkins job triggered successfully! (HTTP $HTTP_STATUS)"
+      echo "⏳ Waiting for Jenkins to start the build..."
+      sleep 10
+      
+      # 2. Handle API request failures when getting build info
+      echo "📡 Fetching latest build information..."
+      
+      if ! RESPONSE=$(curl -s "${JENKINS_URL}/job/${JENKINS_JOB}/api/json" \
+        --user "${JENKINS_USER}:${JENKINS_API_TOKEN}" \
+        --fail-with-body \
+        --max-time 30); then
+        echo "❌ Failed to fetch Jenkins job information"
+        echo "Check Jenkins URL and authentication credentials"
+        exit 1
+      fi
+      
+      # 3. Handle BUILD_NUMBER validation
+      if ! BUILD_NUMBER=$(echo "$RESPONSE" | jq -r '.lastBuild.number // empty'); then
+        echo "❌ Failed to parse Jenkins API response"
+        echo "Response: $RESPONSE"
+        exit 1
+      fi
+      
+      if [[ -z "$BUILD_NUMBER" || "$BUILD_NUMBER" == "null" ]]; then
+        echo "❌ Could not get valid build number from Jenkins"
+        echo "Response: $RESPONSE"
+        exit 1
+      fi
+      
+      echo "📋 Monitoring build #$BUILD_NUMBER"
+      
+      TIMEOUT=600
+      INTERVAL=10
+      ELAPSED=0
+      
+      while true; do
+        # 4. Handle API request failures during status monitoring
+        if ! BUILD_INFO=$(curl -s "${JENKINS_URL}/job/${JENKINS_JOB}/${BUILD_NUMBER}/api/json" \
+          --user "${JENKINS_USER}:${JENKINS_API_TOKEN}" \
+          --fail-with-body \
+          --max-time 30); then
+          echo "⚠️  Failed to fetch build status, retrying in $INTERVAL seconds..."
+          sleep $INTERVAL
+          ELAPSED=$((ELAPSED + INTERVAL))
+          
+          if [[ $ELAPSED -ge $TIMEOUT ]]; then
+            echo "⏰ Timeout reached after $((TIMEOUT / 60)) minutes. Exiting."
+            exit 1
+          fi
+          continue
+        fi
+        
+        # Use jq for reliable JSON parsing
+        STATUS=$(echo "$BUILD_INFO" | jq -r '.result // empty')
+        BUILDING=$(echo "$BUILD_INFO" | jq -r '.building // false')
+        
+        if [[ "$STATUS" == "SUCCESS" ]]; then
+          echo "✅ Jenkins build successful!"
+          exit 0
+        elif [[ "$STATUS" == "FAILURE" || "$STATUS" == "ABORTED" ]]; then
+          echo "❌ Jenkins build failed with status: $STATUS"
+          BUILD_URL="${JENKINS_URL}/job/${JENKINS_JOB}/${BUILD_NUMBER}/"
+          echo "🔗 Build details: $BUILD_URL"
+          exit 1
+        elif [[ "$BUILDING" == "true" ]]; then
+          echo "⏳ Build in progress... (elapsed: ${ELAPSED}s)"
+        else
+          echo "⏳ Build queued or starting... (status: ${STATUS:-pending})"
+        fi
+        
+        sleep $INTERVAL
+        ELAPSED=$((ELAPSED + INTERVAL))
+        
+        if [[ $ELAPSED -ge $TIMEOUT ]]; then
+          echo "⏰ Timeout reached after $((TIMEOUT / 60)) minutes. Exiting."
+          BUILD_URL="${JENKINS_URL}/job/${JENKINS_JOB}/${BUILD_NUMBER}/"
+          echo "🔗 Check build status manually: $BUILD_URL"
+          exit 1
+        fi
+      done
+
+  rules:
+    - if: '$CI_MERGE_REQUEST_TITLE =~ /^\s*(WIP|Draft)/'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
