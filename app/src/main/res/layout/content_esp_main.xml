@@ -17,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:src="@drawable/ic_esp"/>
+            android:src="@drawable/ic_esp" />
 
     </RelativeLayout>
 
@@ -46,14 +46,14 @@
             android:layout_gravity="center_horizontal"
             android:alpha="0.5"
             android:lineSpacingExtra="6sp"
-            android:text="@string/powered_by_esp"
+            android:text="@string/powered_by"
             android:textColor="@color/colorPrimaryDark"
             android:textSize="12sp" />
 
         <TextView
             android:id="@+id/tv_app_version"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="center_horizontal"
             android:alpha="0.5"
             android:lineSpacingExtra="6sp"
