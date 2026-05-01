@@ -80,7 +80,7 @@
     <string name="progress_scanning">Scanning Devices...</string>
     <string name="progress_get_status">Getting Status</string>
     <string name="progress_loading">Loading...</string>
-    <string name="progress_thread_networks">Searching thread\nnetworks...</string>
+    <string name="progress_thread_networks">Searching thread networks...</string>
 
     <!--Error Messages-->
     <string name="error_title">Error!</string>
