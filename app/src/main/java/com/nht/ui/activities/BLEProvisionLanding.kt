@@ -219,7 +219,7 @@ class BLEProvisionLanding : ManualProvBaseActivity() {
                 binding.layoutBleProvisioning.bleLandingProgressIndicator.visibility = View.GONE
                 isConnecting = false
                 isDeviceConnected = false
-                Toast.makeText(this@BLEProvisionLanding, "Device disconnected", Toast.LENGTH_LONG)
+                Toast.makeText(this@BLEProvisionLanding, R.string.dialog_msg_ble_device_disconnection, Toast.LENGTH_LONG)
                     .show()
             }
 
@@ -367,7 +367,7 @@ class BLEProvisionLanding : ManualProvBaseActivity() {
             Log.e(TAG, "Not able to start scan as Location permission is not granted.")
             Toast.makeText(
                 this@BLEProvisionLanding,
-                "Please give location permission to start BLE scan",
+                R.string.ble_location_permission_request_start,
                 Toast.LENGTH_LONG
             ).show()
         }
@@ -387,7 +387,7 @@ class BLEProvisionLanding : ManualProvBaseActivity() {
             Log.e(TAG, "Not able to stop scan as Location permission is not granted.")
             Toast.makeText(
                 this@BLEProvisionLanding,
-                "Please give location permission to stop BLE scan",
+                R.string.ble_location_permission_request_stop,
                 Toast.LENGTH_LONG
             ).show()
         }
@@ -431,7 +431,7 @@ class BLEProvisionLanding : ManualProvBaseActivity() {
         override fun scanStartFailed() {
             Toast.makeText(
                 this@BLEProvisionLanding,
-                "Please turn on Bluetooth to connect BLE device",
+                R.string.error_ble_off,
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -507,7 +507,7 @@ class BLEProvisionLanding : ManualProvBaseActivity() {
                 Log.e(TAG, "Not able to connect device as Location permission is not granted.")
                 Toast.makeText(
                     this@BLEProvisionLanding,
-                    "Please give location permission to connect device",
+                    R.string.error_no_permission,
                     Toast.LENGTH_LONG
                 ).show()
             }

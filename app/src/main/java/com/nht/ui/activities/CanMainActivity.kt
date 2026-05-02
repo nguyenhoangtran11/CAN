@@ -53,7 +53,7 @@ class CanMainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEspMainBinding
 
     private var provisionManager: CanProvisionManager? = null
-    private var ivEsp: ImageView? = null
+    private var ivCan: ImageView? = null
     private var sharedPreferences: SharedPreferences? = null
     private var deviceType: String? = null
 
@@ -88,11 +88,11 @@ class CanMainActivity : AppCompatActivity() {
             AppConstants.DEVICE_TYPE_DEFAULT
         )
         if (deviceType == AppConstants.DEVICE_TYPE_BLE) {
-            ivEsp!!.setImageResource(R.drawable.ic_esp_ble)
+            ivCan!!.setImageResource(R.drawable.ic_can_ble)
         } else if (deviceType == AppConstants.DEVICE_TYPE_SOFTAP) {
-            ivEsp!!.setImageResource(R.drawable.ic_esp_softap)
+            ivCan!!.setImageResource(R.drawable.ic_can_softap)
         } else {
-            ivEsp!!.setImageResource(R.drawable.ic_esp)
+            ivCan!!.setImageResource(R.drawable.ic_can)
         }
     }
 
@@ -135,14 +135,14 @@ class CanMainActivity : AppCompatActivity() {
         if (requestCode == REQUEST_ENABLE_BT && resultCode == RESULT_OK) {
             Toast.makeText(
                 this,
-                "Bluetooth is turned ON, you can provision device now.",
+                R.string.info_bt_on,
                 Toast.LENGTH_LONG
             ).show()
         }
     }
 
     private fun initViews() {
-        ivEsp = findViewById(R.id.iv_esp)
+        ivCan = findViewById(R.id.iv_can)
         binding.layoutEspMain.btnProvisionDevice.ivArrow.visibility = View.GONE
         binding.layoutEspMain.btnProvisionDevice.layoutBtn.setOnClickListener(
             addDeviceBtnClickListener

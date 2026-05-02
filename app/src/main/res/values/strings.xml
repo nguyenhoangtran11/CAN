@@ -148,5 +148,13 @@
     <string name="dialog_msg_nearby_devices_permission_use">Nearby Devices permission is required for scanning and connecting to BLE devices. Please grant it in Settings.</string>
 
     <string name="wifi_reset_message">WiFi has been reset. Please reselect the WiFi credentials.</string>
+    <string name="device_selection_both">Both</string>
+    <string name="ble_location_permission_request_start">Please give location permission to start BLE scan</string>
+    <string name="ble_location_permission_request_stop">Please give location permission to stop BLE scan</string>
+    <string name="error_ble_off">Please turn on Bluetooth to connect BLE device.</string>
+    <string name="error_no_permission">Please give location permission to connect device</string>
+    <string name="error_fail_camera_start">Failed to start camera</string>
+    <string name="error_unable_connect_device">Unable to connect with device. \\nDo you want to connect device manually ?</string>
+    <string name="info_bt_on">Bluetooth is turned ON, you can provision device now</string>
 
 </resources>

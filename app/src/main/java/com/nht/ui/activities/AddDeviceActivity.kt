@@ -284,7 +284,7 @@ class AddDeviceActivity : AppCompatActivity() {
 
             CanConstants.EVENT_DEVICE_DISCONNECTED -> {
                 if (canDevice != null && canDevice!!.transportType == CanConstants.TransportType.TRANSPORT_BLE) {
-                    Toast.makeText(this@AddDeviceActivity, "Device disconnected", Toast.LENGTH_LONG)
+                    Toast.makeText(this@AddDeviceActivity, R.string.dialog_msg_ble_device_disconnection, Toast.LENGTH_LONG)
                         .show()
                     finish()
                 } else {
@@ -296,7 +296,7 @@ class AddDeviceActivity : AppCompatActivity() {
 
             CanConstants.EVENT_DEVICE_CONNECTION_FAILED -> {
                 if (canDevice != null && canDevice!!.transportType == CanConstants.TransportType.TRANSPORT_BLE) {
-                    alertForDeviceNotSupported("Failed to connect with device")
+                    alertForDeviceNotSupported( getString(R.string.error_device_connect_failed))
                 } else {
                     if (!isFinishing) {
                         askForManualDeviceConnection()
@@ -601,7 +601,7 @@ class AddDeviceActivity : AppCompatActivity() {
                                 qrCodeScanListener
                             )
                         } catch (exc: Exception) {
-                            Toast.makeText(this, "Failed to start camera", Toast.LENGTH_SHORT)
+                            Toast.makeText(this, R.string.error_fail_camera_start, Toast.LENGTH_SHORT)
                                 .show()
                         }
                     }, ContextCompat.getMainExecutor(this))
@@ -629,7 +629,7 @@ class AddDeviceActivity : AppCompatActivity() {
                                 qrCodeScanListener
                             )
                         } catch (exc: Exception) {
-                            Toast.makeText(this, "Failed to start camera", Toast.LENGTH_SHORT)
+                            Toast.makeText(this, R.string.error_fail_camera_start, Toast.LENGTH_SHORT)
                                 .show()
                         }
                     }, ContextCompat.getMainExecutor(this))
@@ -848,7 +848,7 @@ class AddDeviceActivity : AppCompatActivity() {
     private fun askForManualDeviceConnection() {
         val builder = AlertDialog.Builder(this)
         builder.setCancelable(true)
-        builder.setMessage("Unable to connect with device. \nDo you want to connect device manually ?")
+        builder.setMessage(R.string.error_unable_connect_device)
 
         builder.setPositiveButton(R.string.btn_yes) { dialog, _ ->
             dialog.dismiss()

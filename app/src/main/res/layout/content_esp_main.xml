@@ -13,11 +13,11 @@
         android:layout_above="@id/btn_provision_device">
 
         <ImageView
-            android:id="@+id/iv_esp"
+            android:id="@+id/iv_can"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_centerInParent="true"
-            android:src="@drawable/ic_esp" />
+            android:src="@drawable/ic_can" />
 
     </RelativeLayout>
 
@@ -33,7 +33,7 @@
 
     <LinearLayout
         android:id="@+id/ll_version"
-        android:layout_width="183dp"
+        android:layout_width="315dp"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
@@ -42,7 +42,7 @@
         android:layout_marginTop="@dimen/margin_40"
         android:layout_marginEnd="@dimen/margin_40"
         android:layout_marginRight="@dimen/margin_8"
-        android:layout_marginBottom="@dimen/margin_40"
+        android:layout_marginBottom="60dp"
         android:orientation="vertical">
 
         <TextView

@@ -75,7 +75,7 @@ import java.util.concurrent.Executors;
  */
 public class CanProvisionManager {
 
-    private static final String TAG = "ESP:" + CanProvisionManager.class.getSimpleName();
+    private static final String TAG = "CAN:" + CanProvisionManager.class.getSimpleName();
 
     private static CanProvisionManager provision;
 

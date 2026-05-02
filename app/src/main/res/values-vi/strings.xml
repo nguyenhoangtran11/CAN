@@ -17,7 +17,7 @@
     <string name="btn_back">Trở về</string>
     <string name="btn_provision">Thiết lập</string>
     <string name="btn_scan_qr_code">Quét mã QR</string>
-    <string name="btn_provision_device">Thiếp lập thiếp bị mới</string>
+    <string name="btn_provision_device">Thiết lập thiết bị mới</string>
     <string name="btn_connect">Kết nối</string>
     <string name="btn_connecting">Kết nối&#8230;</string>
     <string name="btn_wifi_settings">Đi đến cấu hình mạng WIFI</string>
@@ -89,8 +89,8 @@
     <string name="error_no_thread_network">Hiện không có Thread Border Router nào đang hoạt động. Vui lòng kiểm tra kết nối mạng.</string>
     <string name="error_dataset_invalid">Bộ dữ liệu hiện tại không hợp lệ. Vui lòng kiểm tra lại.</string>
     <string name="error_nearby_devices_permission">Vui lòng cấp quyền truy cập thiết bị ở gần. Quyền này cần thiết để quét và kết nối các thiết bị BLE.</string>
-    <string name="prefix">iền tố :</string>
-    <string name="hint_prefix">Vui lòng nhập tiền tố</string>
+    <string name="prefix">Tên bắt đầu: </string>
+    <string name="hint_prefix">Vui lòng nhập tên bắt đầu</string>
     <string name="hint_key">Vui lòng nhập mã PIN</string>
     <string name="devices_title">Thiết bị</string>
     <string name="enter_device_key">Vui lòng nhập mã PIN của thiết bị</string>
@@ -108,8 +108,8 @@
     <string name="device_settings">Quản lý cài đặt của thiết bị</string>
     <string name="device_selection_title">Các loại thiết bị được hỗ trợ</string>
     <string name="security_selection_title">Giao tiếp được mã hóa</string>
-    <string name="username_wifi_pref_title">Tên đăng nhập Sec2 cho Wi-Fi</string>
-    <string name="username_thread_pref_title">Tên đăng nhập Sec2 cho Thread</string>
+    <string name="username_wifi_pref_title">Tên đăng nhập cho Wi-Fi</string>
+    <string name="username_thread_pref_title">Tên đăng nhập cho Thread</string>
     <string name="username_selection_title">Tên đăng nhập</string>
     <string name="summary_secured">Được bảo mật</string>
     <string name="summary_unsecured">Không bảo mật</string>
@@ -121,4 +121,12 @@
     <string name="dialog_title_nearby_devices_permission">Quyền truy cập thiết bị ở gần</string>
     <string name="dialog_msg_nearby_devices_permission_use">Ứng dụng cần quyền truy cập các thiết bị ở gần để quét và kết nối với thiết bị BLE. Vui lòng cấp quyền này trong Cài đặt.</string>
     <string name="wifi_reset_message">Wi-Fi đã được đặt lại. Vui lòng chọn lại thông tin đăng nhập Wi-Fi.</string>
+    <string name="device_selection_both">BLE + SoftAP</string>
+    <string name="ble_location_permission_request_start">Vui lòng cho phép quyền truy cập vị trí để ứng dụng có thể tìm kiếm các thiết bị Bluetooth ở gần.</string>
+    <string name="ble_location_permission_request_stop">Vui lòng cho phép quyền truy cập vị trí để ứng dụng có thể dừng tìm kiếm các thiết bị Bluetooth ở gần.</string>
+    <string name="error_ble_off">Vui lòng bật Bluetooth để kết nối với thiết bị BLE.</string>
+    <string name="error_no_permission">Vui lòng cho phép quyền truy cập vị trí để kết nối với thiết bị.</string>
+    <string name="error_fail_camera_start">Không thể khởi động camera. Vui lòng thử lại.</string>
+    <string name="error_unable_connect_device">Không thể kết nối với thiết bị.\\nBạn có muốn kết nối thiết bị thủ công không?</string>
+    <string name="info_bt_on">Bluetooth đã được bật. Bạn có thể bắt đầu thiết lập thiết bị ngay bây giờ.</string>
 </resources>

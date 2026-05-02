@@ -3,7 +3,7 @@
     <string-array name="device_entries">
         <item>BLE</item>
         <item>SoftAP</item>
-        <item>Both</item>
+        <item>@string/device_selection_both</item>
     </string-array>
 
     <string-array name="device_values">
