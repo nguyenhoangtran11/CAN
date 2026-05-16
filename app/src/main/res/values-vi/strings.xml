@@ -129,4 +129,10 @@
     <string name="error_fail_camera_start">Không thể khởi động camera. Vui lòng thử lại.</string>
     <string name="error_unable_connect_device">Không thể kết nối với thiết bị.\\nBạn có muốn kết nối thiết bị thủ công không?</string>
     <string name="info_bt_on">Bluetooth đã được bật. Bạn có thể bắt đầu thiết lập thiết bị ngay bây giờ.</string>
+    <string name="error_wifi_reset_failed">Không thể gửi lệnh đặt lại Wi-Fi</string>
+    <string name="info_available_thread_network">Mạng Thread khả dụng</string>
+    <string name="info_proceed">Bạn có muốn tiếp tục không?</string>
+    <string name="error_get_scan_list">Không thể lấy danh sách mạng Thread. Vui lòng thử lại.</string>
+    <string name="error_wifi_scan_list">Không thể lấy danh sách mạng Wi-Fi. Vui lòng thử lại.</string>
+    <string name="error_ble_scanning_code">Quá trình quét BLE thất bại với mã lỗi</string>
 </resources>

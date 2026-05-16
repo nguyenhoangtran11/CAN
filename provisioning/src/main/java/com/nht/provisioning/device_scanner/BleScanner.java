@@ -29,6 +29,7 @@ import android.util.Log;
 
 import androidx.annotation.RequiresPermission;
 
+import com.nht.provisioning.R;
 import com.nht.provisioning.listeners.BleScanListener;
 
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ import java.util.List;
  */
 public class BleScanner {
 
-    private static final String TAG = "ESP:" + BleScanner.class.getSimpleName();
+    private static final String TAG = "CAN:" + BleScanner.class.getSimpleName();
 
     private static final long SCAN_TIME_OUT = 6000;
 
@@ -51,6 +52,8 @@ public class BleScanner {
     private boolean isScanning = false;
     private String prefix = "";
 
+    private Context ctx;
+
     public BleScanner(Context context, BleScanListener bleScannerListener) {
 
         this.bleScanListener = bleScannerListener;
@@ -58,6 +61,7 @@ public class BleScanner {
 
         BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
+        ctx = context;
     }
 
     public BleScanner(Context context, String prefix, BleScanListener bleScannerListener) {
@@ -195,7 +199,7 @@ public class BleScanner {
         public void onScanFailed(int errorCode) {
             super.onScanFailed(errorCode);
             Log.e(TAG, "onScanFailed, errorCode:" + errorCode);
-            bleScanListener.onFailure(new RuntimeException("BLE scanning failed with error code : " + errorCode));
+            bleScanListener.onFailure(new RuntimeException( ctx.getString(R.string.error_ble_scanning_code) + " : " + errorCode));
         }
     };
 }

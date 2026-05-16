@@ -1,0 +1,30 @@
+<resources>
+    <string name="error_ble_scanning_code">BLE scanning failed with error code</string>
+    <string name="error_no_detector">No detector supplied.</string>
+    <string name="error_invalid_fps">Invalid fps:</string>
+    <string name="error_invalid_preview_size">Invalid preview size:</string>
+    <string name="error_request_camera">Could not find requested camera.</string>
+    <string name="error_find_suitable_review_size">Could not find suitable preview size.</string>
+    <string name="error_find_suitable_fps">Could not find suitable preview frames per second range.</string>
+    <string name="error_create_valid_buffer">Failed to create valid buffer for camera source.</string>
+    <string name="error_fail_create_session">Failed to create session.</string>
+    <string name="error_session_not_established">Session is not established</string>
+    <string name="error_fail_reset_wifi">Failed to reset WiFi status</string>
+    <string name="error_fail_send_wifi_cmd">Failed to send Wi-Fi scan command.</string>
+    <string name="error_fail_send_thread_cmd">Failed to send thread scan command.</string>
+    <string name="error_fail_get_wifi_network">Failed to get Wi-Fi Networks.</string>
+    <string name="error_fail_get_thread_network">Failed to get Thread Networks.</string>
+    <string name="error_fail_send_wifi_cred">Failed to send wifi credentials to device</string>
+    <string name="error_fail_send_thread_cred">Failed to send thread credentials to device</string>
+    <string name="error_fail_apply_wifi_cred">Failed to apply wifi credentials.</string>
+    <string name="error_fail_apply_thread_cred">Failed to apply thread credentials</string>
+    <string name="error_fail_provisioning">Provisioning Failed</string>
+    <string name="error_get_wifi_status">Failed to get Wi-Fi status.</string>
+    <string name="error_qr_code_invalid">QR code is not valid</string>
+    <string name="error_failed_start_camera">Failed to start camera:</string>
+    <string name="error_unsupported_transport_type">Transport type is not supported</string>
+    <string name="error_invalid_qr_unavailable_transport">QR code is not valid. Transport is not available</string>
+    <string name="error_bt_off">Please turn on bluetooth and try again.</string>
+    <string name="error_device_not_found">device not found</string>
+    <string name="error_session_unable_established">Session could not be established</string>
+</resources>

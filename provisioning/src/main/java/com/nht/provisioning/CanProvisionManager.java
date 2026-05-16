@@ -227,7 +227,7 @@ public class CanProvisionManager {
                     processQrCode(scannedData, qrCodeScanListener);
 
                 } else {
-                    qrCodeScanListener.onFailure(new RuntimeException("QR code is not valid"), scannedData);
+                    qrCodeScanListener.onFailure(new RuntimeException(context.getString(R.string.error_qr_code_invalid)), scannedData);
                 }
             }
         });
@@ -305,7 +305,7 @@ public class CanProvisionManager {
                 }
 
             } catch (ExecutionException | InterruptedException e) {
-                String errorMsg = "Failed to start camera: " + e.getMessage();
+                String errorMsg = context.getString(R.string.error_failed_start_camera) + e.getMessage();
                 Log.e(TAG, errorMsg);
                 qrCodeScanListener.onFailure(new RuntimeException(errorMsg));
             }
@@ -344,12 +344,12 @@ public class CanProvisionManager {
 
                 } else {
                     Log.e(TAG, "" + transport + " Transport type is not supported");
-                    qrCodeScanListener.onFailure(new RuntimeException("Transport type is not supported"), qrCode);
+                    qrCodeScanListener.onFailure(new RuntimeException(context.getString(R.string.error_unsupported_transport_type)), qrCode);
                     return;
                 }
             } else {
                 Log.e(TAG, "Transport is not available in QR code data");
-                qrCodeScanListener.onFailure(new RuntimeException("QR code is not valid. Transport is not available"), qrCode);
+                qrCodeScanListener.onFailure(new RuntimeException(context.getString(R.string.error_invalid_qr_unavailable_transport)), qrCode);
                 return;
             }
 
@@ -372,7 +372,7 @@ public class CanProvisionManager {
 
         } catch (JSONException e) {
             e.printStackTrace();
-            qrCodeScanListener.onFailure(new RuntimeException("QR code is not valid"), qrCode);
+            qrCodeScanListener.onFailure(new RuntimeException(context.getString(R.string.error_qr_code_invalid)), qrCode);
         }
     }
 
@@ -581,7 +581,7 @@ public class CanProvisionManager {
 
                     @Override
                     public void scanStartFailed() {
-                        listener.onFailure(new RuntimeException("Please turn on bluetooth and try again."));
+                        listener.onFailure(new RuntimeException(context.getString(R.string.error_bt_off)));
                     }
 
                     @Override
@@ -619,7 +619,7 @@ public class CanProvisionManager {
                                 SearchDeviceTask searchDeviceTask = new SearchDeviceTask(device, password, listener);
                                 handler.postDelayed(searchDeviceTask, 500);
                             } else {
-                                String errMsg = "" + device.getDeviceName() + " device not found";
+                                String errMsg = "" + device.getDeviceName() + " " + context.getString(R.string.error_device_not_found);
                                 listener.onFailure(new RuntimeException(errMsg));
                             }
                         } else {
@@ -642,7 +642,7 @@ public class CanProvisionManager {
                                 SearchDeviceTask searchDeviceTask = new SearchDeviceTask(device, password, listener);
                                 handler.postDelayed(searchDeviceTask, 500);
                             } else {
-                                String errMsg = "" + device.getDeviceName() + " device not found";
+                                String errMsg = "" + device.getDeviceName() + " " + context.getString(R.string.error_device_not_found);
                                 listener.onFailure(new RuntimeException(errMsg));
                             }
                         }
@@ -679,7 +679,7 @@ public class CanProvisionManager {
                                 SearchDeviceTask searchDeviceTask = new SearchDeviceTask(device, password, listener);
                                 handler.postDelayed(searchDeviceTask, 500);
                             } else {
-                                String errMsg = "" + device.getDeviceName() + " device not found";
+                                String errMsg = "" + device.getDeviceName() + " " + context.getString(R.string.error_device_not_found);
                                 listener.onFailure(new RuntimeException(errMsg));
                             }
                         }
@@ -701,7 +701,7 @@ public class CanProvisionManager {
                                 SearchDeviceTask searchDeviceTask = new SearchDeviceTask(device, password, listener);
                                 handler.postDelayed(searchDeviceTask, 500);
                             } else {
-                                String errMsg = "" + device.getDeviceName() + " device not found";
+                                String errMsg = "" + device.getDeviceName() + " " + context.getString(R.string.error_device_not_found);
                                 listener.onFailure(new RuntimeException(errMsg));
                             }
                         }

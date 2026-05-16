@@ -156,5 +156,11 @@
     <string name="error_fail_camera_start">Failed to start camera</string>
     <string name="error_unable_connect_device">Unable to connect with device. \\nDo you want to connect device manually ?</string>
     <string name="info_bt_on">Bluetooth is turned ON, you can provision device now</string>
+    <string name="error_wifi_reset_failed">Failed to send WiFi reset command</string>
+    <string name="info_available_thread_network">Available Thread Network</string>
+    <string name="info_proceed">Do you want to proceed ?</string>
+    <string name="error_get_scan_list">Failed to get thread scan list</string>
+    <string name="error_wifi_scan_list">Failed to get Wi-Fi scan list</string>
+    <string name="error_ble_scanning_code">BLE scanning failed with error code</string>
 
 </resources>

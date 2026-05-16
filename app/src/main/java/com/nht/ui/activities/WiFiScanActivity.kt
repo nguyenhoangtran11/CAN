@@ -158,7 +158,7 @@ class WiFiScanActivity : AppCompatActivity() {
                     updateProgressAndScanBtn(false)
                     Toast.makeText(
                         this@WiFiScanActivity,
-                        "Failed to get Wi-Fi scan list",
+                        R.string.error_wifi_scan_list,
                         Toast.LENGTH_LONG
                     ).show()
                 }

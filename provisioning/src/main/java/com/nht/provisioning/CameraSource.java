@@ -154,6 +154,8 @@ public class CameraSource {
     private Thread mProcessingThread;
     private FrameProcessingRunnable mFrameProcessor;
 
+    private static Context ctx;
+
     /**
      * Map to convert between a byte array, received from the camera, and its associated byte
      * buffer.  We use byte buffers internally because this is a more efficient way to call into
@@ -180,12 +182,15 @@ public class CameraSource {
             if (context == null) {
                 throw new IllegalArgumentException("No context supplied.");
             }
+
+            mCameraSource.mContext = context;
+            ctx = context;
+
             if (detector == null) {
-                throw new IllegalArgumentException("No detector supplied.");
+                throw new IllegalArgumentException(ctx.getString(R.string.error_no_detector));
             }
 
             mDetector = detector;
-            mCameraSource.mContext = context;
         }
 
         /**
@@ -194,7 +199,7 @@ public class CameraSource {
          */
         public Builder setRequestedFps(float fps) {
             if (fps <= 0) {
-                throw new IllegalArgumentException("Invalid fps: " + fps);
+                throw new IllegalArgumentException(ctx.getString(R.string.error_invalid_fps) + fps);
             }
             mCameraSource.mRequestedFps = fps;
             return this;
@@ -235,7 +240,7 @@ public class CameraSource {
          */
         public Builder setFacing(int facing) {
             if ((facing != CAMERA_FACING_BACK) && (facing != CAMERA_FACING_FRONT)) {
-                throw new IllegalArgumentException("Invalid camera: " + facing);
+                throw new IllegalArgumentException(ctx.getString(R.string.error_invalid_preview_size) + facing);
             }
             mCameraSource.mFacing = facing;
             return this;
@@ -743,20 +748,20 @@ public class CameraSource {
     private Camera createCamera() {
         int requestedCameraId = getIdForRequestedCamera(mFacing);
         if (requestedCameraId == -1) {
-            throw new RuntimeException("Could not find requested camera.");
+            throw new RuntimeException(ctx.getString(R.string.error_request_camera));
         }
         Camera camera = Camera.open(requestedCameraId);
 
         SizePair sizePair = selectSizePair(camera, mRequestedPreviewWidth, mRequestedPreviewHeight);
         if (sizePair == null) {
-            throw new RuntimeException("Could not find suitable preview size.");
+            throw new RuntimeException(ctx.getString(R.string.error_find_suitable_review_size));
         }
         Size pictureSize = sizePair.pictureSize();
         mPreviewSize = sizePair.previewSize();
 
         int[] previewFpsRange = selectPreviewFpsRange(camera, mRequestedFps);
         if (previewFpsRange == null) {
-            throw new RuntimeException("Could not find suitable preview frames per second range.");
+            throw new RuntimeException(ctx.getString(R.string.error_find_suitable_fps));
         }
 
         Camera.Parameters parameters = camera.getParameters();
@@ -1044,7 +1049,7 @@ public class CameraSource {
         if (!buffer.hasArray() || (buffer.array() != byteArray)) {
             // I don't think that this will ever happen.  But if it does, then we wouldn't be
             // passing the preview content to the underlying detector later.
-            throw new IllegalStateException("Failed to create valid buffer for camera source.");
+            throw new IllegalStateException(ctx.getString(R.string.error_create_valid_buffer));
         }
 
         mBytesToByteBuffer.put(byteArray, buffer);

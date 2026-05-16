@@ -46,6 +46,7 @@
         android:id="@+id/wifi_list_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="60dp"
         android:layout_below="@id/network_layout">
 
         <ListView

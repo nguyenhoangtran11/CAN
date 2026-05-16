@@ -522,7 +522,7 @@ public class CanDevice {
                 public void onFailure(Exception e) {
                     e.printStackTrace();
                     if (wifiScanListener != null) {
-                        wifiScanListener.onWiFiScanFailed(new RuntimeException("Failed to create session."));
+                        wifiScanListener.onWiFiScanFailed(new RuntimeException(context.getString(R.string.error_fail_create_session)));
                     }
                 }
             });
@@ -554,7 +554,7 @@ public class CanDevice {
                 public void onFailure(Exception e) {
                     e.printStackTrace();
                     if (wifiScanListener != null) {
-                        wifiScanListener.onWiFiScanFailed(new RuntimeException("Failed to create session."));
+                        wifiScanListener.onWiFiScanFailed(new RuntimeException(context.getString(R.string.error_fail_create_session)));
                     }
                 }
             });
@@ -605,7 +605,7 @@ public class CanDevice {
 
         if (session == null || !session.isEstablished()) {
             if (listener != null) {
-                listener.onFailure(new RuntimeException("Session is not established"));
+                listener.onFailure(new RuntimeException(context.getString(R.string.error_session_not_established)));
             }
             return;
         }
@@ -620,7 +620,7 @@ public class CanDevice {
                     if (status == Constants.Status.Success) {
                         listener.onSuccess(returnData);
                     } else {
-                        listener.onFailure(new RuntimeException("Failed to reset WiFi status"));
+                        listener.onFailure(new RuntimeException(context.getString(R.string.error_fail_reset_wifi)));
                     }
                 }
             }
@@ -660,7 +660,7 @@ public class CanDevice {
                     e.printStackTrace();
                     disableOnlyWifiNetwork();
                     if (provisionListener != null) {
-                        provisionListener.createSessionFailed(new RuntimeException("Failed to create session."));
+                        provisionListener.createSessionFailed(new RuntimeException(context.getString(R.string.error_fail_create_session)));
                     }
                 }
             });
@@ -693,7 +693,7 @@ public class CanDevice {
                     e.printStackTrace();
                     disableOnlyWifiNetwork();
                     if (provisionListener != null) {
-                        provisionListener.createSessionFailed(new RuntimeException("Failed to create session."));
+                        provisionListener.createSessionFailed(new RuntimeException(context.getString(R.string.error_fail_create_session)));
                     }
                 }
             });
@@ -838,7 +838,7 @@ public class CanDevice {
                     public void onFailure(Exception e) {
                         e.printStackTrace();
                         if (wifiScanListener != null) {
-                            wifiScanListener.onWiFiScanFailed(new RuntimeException("Failed to send Wi-Fi scan command."));
+                            wifiScanListener.onWiFiScanFailed(new RuntimeException(context.getString(R.string.error_fail_send_wifi_cmd)));
                         }
                     }
                 });
@@ -848,7 +848,7 @@ public class CanDevice {
             public void onFailure(Exception e) {
                 e.printStackTrace();
                 if (wifiScanListener != null) {
-                    wifiScanListener.onWiFiScanFailed(new RuntimeException("Failed to send Wi-Fi scan command."));
+                    wifiScanListener.onWiFiScanFailed(new RuntimeException(context.getString(R.string.error_fail_send_wifi_cmd)));
                 }
             }
         });
@@ -881,7 +881,7 @@ public class CanDevice {
                     public void onFailure(Exception e) {
                         e.printStackTrace();
                         if (wifiScanListener != null) {
-                            wifiScanListener.onWiFiScanFailed(new RuntimeException("Failed to send thread scan command."));
+                            wifiScanListener.onWiFiScanFailed(new RuntimeException(context.getString(R.string.error_fail_send_thread_cmd)));
                         }
                     }
                 });
@@ -891,7 +891,7 @@ public class CanDevice {
             public void onFailure(Exception e) {
                 e.printStackTrace();
                 if (wifiScanListener != null) {
-                    wifiScanListener.onWiFiScanFailed(new RuntimeException("Failed to send thread scan command."));
+                    wifiScanListener.onWiFiScanFailed(new RuntimeException(context.getString(R.string.error_fail_send_thread_cmd)));
                 }
             }
         });
@@ -973,7 +973,7 @@ public class CanDevice {
             public void onFailure(Exception e) {
                 e.printStackTrace();
                 if (wifiScanListener != null) {
-                    wifiScanListener.onWiFiScanFailed(new RuntimeException("Failed to get Wi-Fi Networks."));
+                    wifiScanListener.onWiFiScanFailed(new RuntimeException(context.getString(R.string.error_fail_get_wifi_network)));
                 }
             }
         });
@@ -1001,7 +1001,7 @@ public class CanDevice {
             public void onFailure(Exception e) {
                 e.printStackTrace();
                 if (wifiScanListener != null) {
-                    wifiScanListener.onWiFiScanFailed(new RuntimeException("Failed to get Thread Networks."));
+                    wifiScanListener.onWiFiScanFailed(new RuntimeException(context.getString(R.string.error_fail_get_thread_network)));
                 }
             }
         });
@@ -1026,7 +1026,7 @@ public class CanDevice {
                 Constants.Status status = processWifiConfigResponse(returnData);
                 if (provisionListener != null) {
                     if (status != Constants.Status.Success) {
-                        provisionListener.wifiConfigFailed(new RuntimeException("Failed to send wifi credentials to device"));
+                        provisionListener.wifiConfigFailed(new RuntimeException(context.getString(R.string.error_fail_send_wifi_cred)));
                     } else {
                         provisionListener.wifiConfigSent();
                     }
@@ -1044,7 +1044,7 @@ public class CanDevice {
                 e.printStackTrace();
                 disableOnlyWifiNetwork();
                 if (provisionListener != null) {
-                    provisionListener.wifiConfigFailed(new RuntimeException("Failed to send wifi credentials to device"));
+                    provisionListener.wifiConfigFailed(new RuntimeException(context.getString(R.string.error_fail_send_wifi_cred)));
                 }
             }
         });
@@ -1062,7 +1062,7 @@ public class CanDevice {
                 Constants.Status status = processThreadConfigResponse(returnData);
                 if (provisionListener != null) {
                     if (status != Constants.Status.Success) {
-                        provisionListener.wifiConfigFailed(new RuntimeException("Failed to send wifi credentials to device"));
+                        provisionListener.wifiConfigFailed(new RuntimeException(context.getString(R.string.error_fail_send_wifi_cred)));
                     } else {
                         provisionListener.wifiConfigSent();
                     }
@@ -1080,7 +1080,7 @@ public class CanDevice {
                 e.printStackTrace();
                 disableOnlyWifiNetwork();
                 if (provisionListener != null) {
-                    provisionListener.wifiConfigFailed(new RuntimeException("Failed to send thread credentials to device"));
+                    provisionListener.wifiConfigFailed(new RuntimeException(context.getString(R.string.error_fail_send_thread_cred)));
                 }
             }
         });
@@ -1111,7 +1111,7 @@ public class CanDevice {
                 } else {
                     disableOnlyWifiNetwork();
                     if (provisionListener != null) {
-                        provisionListener.wifiConfigApplyFailed(new RuntimeException("Failed to apply wifi credentials"));
+                        provisionListener.wifiConfigApplyFailed(new RuntimeException(context.getString(R.string.error_fail_apply_wifi_cred)));
                     }
                 }
             }
@@ -1121,7 +1121,7 @@ public class CanDevice {
                 e.printStackTrace();
                 disableOnlyWifiNetwork();
                 if (provisionListener != null) {
-                    provisionListener.wifiConfigApplyFailed(new RuntimeException("Failed to apply wifi credentials"));
+                    provisionListener.wifiConfigApplyFailed(new RuntimeException(context.getString(R.string.error_fail_apply_wifi_cred)));
                 }
             }
         });
@@ -1152,7 +1152,7 @@ public class CanDevice {
                 } else {
                     disableOnlyWifiNetwork();
                     if (provisionListener != null) {
-                        provisionListener.wifiConfigApplyFailed(new RuntimeException("Failed to apply thread credentials"));
+                        provisionListener.wifiConfigApplyFailed(new RuntimeException(context.getString(R.string.error_fail_apply_thread_cred)));
                     }
                 }
             }
@@ -1162,7 +1162,7 @@ public class CanDevice {
                 e.printStackTrace();
                 disableOnlyWifiNetwork();
                 if (provisionListener != null) {
-                    provisionListener.wifiConfigApplyFailed(new RuntimeException("Failed to apply thread credentials"));
+                    provisionListener.wifiConfigApplyFailed(new RuntimeException(context.getString(R.string.error_fail_apply_thread_cred)));
                 }
             }
         });
@@ -1205,7 +1205,7 @@ public class CanDevice {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         disableOnlyWifiNetwork();
-                        provisionListener.onProvisioningFailed(new RuntimeException("Provisioning Failed"));
+                        provisionListener.onProvisioningFailed(new RuntimeException(context.getString(R.string.error_fail_provisioning)));
                     }
                 } else {
 
@@ -1228,7 +1228,7 @@ public class CanDevice {
             public void onFailure(Exception e) {
                 e.printStackTrace();
                 disableOnlyWifiNetwork();
-                provisionListener.onProvisioningFailed(new RuntimeException("Provisioning Failed"));
+                provisionListener.onProvisioningFailed(new RuntimeException(context.getString(R.string.error_fail_provisioning)));
             }
         });
     }
@@ -1269,7 +1269,7 @@ public class CanDevice {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         disableOnlyWifiNetwork();
-                        provisionListener.onProvisioningFailed(new RuntimeException("Provisioning Failed"));
+                        provisionListener.onProvisioningFailed(new RuntimeException(context.getString(R.string.error_fail_provisioning)));
                     }
                 } else {
 
@@ -1292,7 +1292,7 @@ public class CanDevice {
             public void onFailure(Exception e) {
                 e.printStackTrace();
                 disableOnlyWifiNetwork();
-                provisionListener.onProvisioningFailed(new RuntimeException("Provisioning Failed"));
+                provisionListener.onProvisioningFailed(new RuntimeException(context.getString(R.string.error_fail_provisioning)));
             }
         });
     }
@@ -1343,7 +1343,7 @@ public class CanDevice {
 
             e.printStackTrace();
             if (wifiScanListener != null) {
-                wifiScanListener.onWiFiScanFailed(new RuntimeException("Failed to get Wi-Fi status."));
+                wifiScanListener.onWiFiScanFailed(new RuntimeException(context.getString(R.string.error_get_wifi_status)));
             }
         }
     }
@@ -1369,7 +1369,7 @@ public class CanDevice {
 
             e.printStackTrace();
             if (wifiScanListener != null) {
-                wifiScanListener.onWiFiScanFailed(new RuntimeException("Failed to get Wi-Fi status."));
+                wifiScanListener.onWiFiScanFailed(new RuntimeException(context.getString(R.string.error_get_wifi_status)));
             }
         }
     }

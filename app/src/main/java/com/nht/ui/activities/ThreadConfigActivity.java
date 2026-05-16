@@ -150,8 +150,8 @@ public class ThreadConfigActivity extends AppCompatActivity {
                             // If "thread_scan" capability is not available and "thread_prov" is available
                             hideLoading();
                             binding.btnNext.textBtn.setText(R.string.btn_next);
-                            String str = "Available Thread Network : " + preferredCredentials.getNetworkName() + "\n"
-                                    + "Do you want to proceed ?";
+                            String str = getString(R.string.info_available_thread_network) + ": " + preferredCredentials.getNetworkName() + "\n"
+                                    + getString(R.string.info_proceed);
                             binding.tvThreadMessage.setText(str);
                         }
 
@@ -232,8 +232,8 @@ public class ThreadConfigActivity extends AppCompatActivity {
 
                                 hideLoading();
                                 binding.btnNext.textBtn.setText(R.string.btn_next);
-                                String str = "Available Thread Network : " + preferredCredentials.getNetworkName() + "\n"
-                                        + "Do you want to proceed ?";
+                                String str = getString(R.string.info_available_thread_network) + ": " + preferredCredentials.getNetworkName() + "\n"
+                                        + getString(R.string.info_proceed);
                                 binding.tvThreadMessage.setText(str);
 
                             } else {
@@ -257,7 +257,7 @@ public class ThreadConfigActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         hideLoading();
-                        showError(getString(R.string.error_title), "Failed to get thread scan list", false);
+                        showError(getString(R.string.error_title), getString(R.string.error_get_scan_list), false);
                     }
                 });
             }

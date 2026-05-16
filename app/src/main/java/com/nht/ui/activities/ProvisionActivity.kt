@@ -380,7 +380,7 @@ class ProvisionActivity : AppCompatActivity() {
                 runOnUiThread {
                     // Log error but don't block UI - reset is best effort
                     Log.e(TAG, "Failed to send WiFi reset command", e)
-                    showResetPasswordFailedAlert("Failed to send WiFi reset command: ${e.message}")
+                    showResetPasswordFailedAlert(getString(R.string.error_wifi_reset_failed) + ": ${e.message}")
                 }
             }
         })

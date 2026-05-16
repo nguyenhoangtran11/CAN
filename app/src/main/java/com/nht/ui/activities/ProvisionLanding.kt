@@ -151,7 +151,7 @@ class ProvisionLanding : ManualProvBaseActivity() {
             Log.e(TAG, "Not able to connect device as Location permission is not granted.")
             Toast.makeText(
                 this@ProvisionLanding,
-                "Please give location permission to connect device",
+                R.string.error_no_permission,
                 Toast.LENGTH_LONG
             ).show()
         }

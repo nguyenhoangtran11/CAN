@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_ble_scanning_code">Quá trình quét BLE thất bại với mã lỗi</string>
+    <string name="error_no_detector">Đối tượng \'detector\' không được cung cấp</string>
+    <string name="error_invalid_fps">FPS không hợp lệ:</string>
+    <string name="error_invalid_preview_size">Kích thước xem trước không hợp lệ:</string>
+    <string name="error_request_camera">Không tìm thấy camera được yêu cầu.</string>
+    <string name="error_find_suitable_review_size">Không tìm thấy kích thước xem trước phù hợp.</string>
+    <string name="error_find_suitable_fps">Không tìm thấy dải tốc độ khung hình (FPS) phù hợp.</string>
+    <string name="error_create_valid_buffer">Không thể tạo bộ đệm hợp lệ cho camera.</string>
+    <string name="error_fail_create_session">Không thể tạo phiên làm việc.</string>
+    <string name="error_session_not_established">Phiên làm việc chưa được thiết lập.</string>
+    <string name="error_fail_reset_wifi">Không thể đặt lại trạng thái Wi-Fi.</string>
+    <string name="error_fail_send_wifi_cmd">Không thể gửi lệnh quét Wi-Fi.</string>
+    <string name="error_fail_send_thread_cmd">Không thể gửi lệnh quét Thread.</string>
+    <string name="error_fail_get_wifi_network">Không thể lấy danh sách mạng Wi-Fi.</string>
+    <string name="error_fail_get_thread_network">Không thể lấy danh sách mạng Thread.</string>
+    <string name="error_fail_send_wifi_cred">Không thể gửi thông tin Wi-Fi đến thiết bị.</string>
+    <string name="error_fail_send_thread_cred">Không thể gửi thông tin Thread đến thiết bị.</string>
+    <string name="error_fail_apply_wifi_cred">Không thể áp dụng thông tin Wi-Fi.</string>
+    <string name="error_fail_apply_thread_cred">Không thể áp dụng thông tin Thread.</string>
+    <string name="error_fail_provisioning">Thiết lập thiết bị thất bại.</string>
+    <string name="error_get_wifi_status">Không thể lấy trạng thái mạng wifi</string>
+    <string name="error_qr_code_invalid">Mã QR không hợp lệ.</string>
+    <string name="error_failed_start_camera">Không thể khởi động camera:</string>
+    <string name="error_unsupported_transport_type">Loại kết nối này không được hỗ trợ.</string>
+    <string name="error_invalid_qr_unavailable_transport">Mã QR không hợp lệ hoặc phương thức kết nối không khả dụng.</string>
+    <string name="error_bt_off">Vui lòng bật Bluetooth và thử lại.</string>
+    <string name="error_device_not_found">thiết bị không tìm thấy.</string>
+    <string name="error_session_unable_established">Không thể thiết lập phiên kết nối.</string>
+</resources>
