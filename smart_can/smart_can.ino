@@ -66,6 +66,7 @@ void onWiFiProvisioningEvent(arduino_event_t *event) {
 
     case ARDUINO_EVENT_PROV_CRED_SUCCESS:
       Serial.println("[Prov] Provisioning successful.");
+      Serial.println("If you want to reset provisioning, press BOOT button for 3s.");
       break;
 
     case ARDUINO_EVENT_PROV_END:
@@ -82,7 +83,7 @@ void resetProvisioning() {
   WiFiProv.endProvision();
   nvs_flash_erase(); // Erase NVS partition
   Serial.println("[Reset] Provisioning data erased. Restarting...");
-  delay(1000);
+  delay(3000);
   ESP.restart();
 }
 
@@ -102,33 +103,62 @@ void checkResetButton() {
 
 void setup() {
   Serial.begin(115200);
+  while (!Serial) { delay(10); } // Wait for Serial to be ready
+  Serial.flush();                 // Flush serial buffer
+
   pinMode(kResetButtonPin, INPUT_PULLUP);
 
   // Register event callback for both Wi-Fi and provisioning events
   WiFi.onEvent(onWiFiProvisioningEvent);
 
-  Serial.println("[Init] Starting BLE provisioning...");
-  Serial.println("[Init] Press BOOT button for 3s to reset provisioning.");
+  // Initialize NVS
+  esp_err_t ret = nvs_flash_init();
+  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    nvs_flash_erase();
+    nvs_flash_init();
+  }
 
-  // Start provisioning:
-  // - Scheme: BLE
-  // - Security: POP-based security level 1
-  WiFiProv.beginProvision(
-    NETWORK_PROV_SCHEME_BLE,
-    NETWORK_PROV_SCHEME_HANDLER_FREE_BLE,
-    NETWORK_PROV_SECURITY_1,
-    kProofOfPossession,
-    kProvisioningServiceName,
-    kSoftApPassword,
-    kBleServiceUuid,
-    kResetProvisionedData
-  );
+  // Check if Wi-Fi credentials are stored in NVS
+  nvs_handle_t nvs_handle;
+  esp_err_t err = nvs_open("nvs.net80211", NVS_READONLY, &nvs_handle);
+  bool provisioned = false;
 
-  // Print QR payload for phone app provisioning
-  WiFiProv.printQR(kProvisioningServiceName, kProofOfPossession, "ble");
+  if (err == ESP_OK) {
+    size_t ssid_len = 0;
+    err = nvs_get_blob(nvs_handle, "sta.ssid", NULL, &ssid_len);
+    provisioned = (err == ESP_OK && ssid_len > 0);
+    nvs_close(nvs_handle);
+  }
+
+  if (!provisioned) {
+    Serial.println("[Init] Device not provisioned. Starting provisioning...");
+
+    // Start provisioning:
+    // - Scheme: BLE
+    // - Security: POP-based security level 1
+    WiFiProv.beginProvision(
+      NETWORK_PROV_SCHEME_BLE,
+      NETWORK_PROV_SCHEME_HANDLER_FREE_BLE,
+      NETWORK_PROV_SECURITY_1,
+      kProofOfPossession,
+      kProvisioningServiceName,
+      kSoftApPassword,
+      kBleServiceUuid,
+      kResetProvisionedData
+    );
+
+
+    // Print QR payload for phone app provisioning
+    WiFiProv.printQR(kProvisioningServiceName, kProofOfPossession, "ble");
+  } else {
+    Serial.println("[Init] Device already provisioned. Connecting to saved network...");
+    Serial.println("If you want to reset provisioning, press BOOT button for 3s.");
+    WiFi.mode(WIFI_STA);
+    WiFi.begin();
+  }
 }
 
 void loop() {
   checkResetButton();
-  delay(100);
+  delay(200);
 }
