@@ -6,6 +6,15 @@
 #include <ESPmDNS.h>
 
 // ============================================================
+// Sketch overview (self-explanation)
+// 1) Boot and initialize serial + NVS
+// 2) Check if Wi-Fi credentials already exist in NVS
+// 3) If not provisioned: start BLE provisioning and wait for app
+// 4) If provisioned: initialize camera, connect Wi-Fi, start mDNS + web server
+// 5) Always monitor BOOT long-press to factory-reset provisioning data
+// ============================================================
+
+// ============================================================
 // Limits for Wi-Fi credential buffers
 // IEEE 802.11 allows up to:
 //   - SSID: 32 characters
@@ -33,6 +42,8 @@ static const char *kProvisioningSoftApPassword = NULL;
 // If true, existing provisioning data is erased when provisioning starts.
 // Useful during development/testing. In production, this is often false.
 static const bool kForceResetProvisioningDataOnStart = true;
+// NOTE: Keep this 'true' for development convenience.
+// In production, set to false to preserve valid stored credentials.
 
 // Optional custom BLE service UUID.
 // This helps identify the provisioning service.
@@ -47,13 +58,13 @@ static uint8_t kProvisioningBleServiceUuid[16] = {
 
 // BOOT button pin on most ESP32 camera boards.
 // Holding this button for a few seconds clears stored provisioning.
-static const int kFactoryResetButtonPin = 0;
+static const int kFactoryResetButtonPin = 0; // GPIO 0 is usually the BOOT button
 
 // Duration required to trigger factory reset.
 static const unsigned long kFactoryResetLongPressMs = 3000;
 
 // Debounce window for BOOT button sampling.
-static const unsigned long kFactoryResetDebounceMs = 50;
+static const unsigned long kFactoryResetDebounceMs = 100;
 
 // Timestamp of when the button was first pressed.
 unsigned long gButtonPressStartMs = 0;
@@ -75,6 +86,7 @@ void setupLedFlash();
 // - Use it mainly for logging or small state updates.
 // ------------------------------------------------------------
 void handleWiFiAndProvisioningEvent(arduino_event_t *event) {
+  // Centralized event logger for both provisioning and STA connection lifecycle.
   switch (event->event_id) {
     case ARDUINO_EVENT_WIFI_STA_GOT_IP:
       // Wi-Fi station connected successfully and received an IP address.
@@ -124,8 +136,10 @@ void handleWiFiAndProvisioningEvent(arduino_event_t *event) {
 
     case ARDUINO_EVENT_PROV_END:
       // Provisioning workflow has finished.
+      // Typical next step is restart so normal station flow can start cleanly.
       Serial.println("[Prov] Provisioning ended. Restarting ...");
-      ESP.restart();
+      digitalWrite(LED_GPIO_NUM, LOW);
+      rebootDevice();
       break;
 
     default:
@@ -137,6 +151,7 @@ void handleWiFiAndProvisioningEvent(arduino_event_t *event) {
 // Camera initialization
 // ------------------------------------------------------------
 void initializeCamera() {
+  // Keep all camera defaults in one place for easier tuning/debugging.
   // Camera driver configuration structure.
   // Pin values come from board_config.h for the selected camera board.
   camera_config_t cameraConfig;
@@ -175,6 +190,7 @@ void initializeCamera() {
       cameraConfig.grab_mode = CAMERA_GRAB_LATEST;
     } else {
       // Without PSRAM, reduce frame size and use DRAM to avoid memory issues.
+      // This trades quality for stability on memory-limited boards.
       cameraConfig.frame_size = FRAMESIZE_SVGA;
       cameraConfig.fb_location = CAMERA_FB_IN_DRAM;
     }
@@ -195,6 +211,7 @@ void initializeCamera() {
   // Initialize the camera driver with the selected configuration.
   esp_err_t initStatus = esp_camera_init(&cameraConfig);
   if (initStatus != ESP_OK) {
+    // Early return keeps later sensor calls safe when camera init fails.
     Serial.printf("[Camera] Init failed. Error: 0x%x\n", initStatus);
     return;
   }
@@ -231,18 +248,32 @@ void initializeCamera() {
 #endif
 }
 
+void rebootDevice() {
+  // Small LED blink gives user visual feedback before restart.
+  Serial.println("[Reboot] Restarting device...");
+  #if defined(LED_GPIO_NUM)
+    // Turn on ESP32 CAM LED
+    pinMode(LED_GPIO_NUM, OUTPUT);
+    digitalWrite(LED_GPIO_NUM, HIGH);
+    delay(100);
+    digitalWrite(LED_GPIO_NUM, LOW);
+  #endif
+  ESP.restart();
+}
+
 // ------------------------------------------------------------
 // Provisioning reset helpers
 // ------------------------------------------------------------
 void factoryResetProvisioning() {
   // Stop active provisioning service, erase NVS, then restart the chip.
   // This removes saved Wi-Fi credentials and provisioning information.
+  // Equivalent to returning device to "not provisioned" state.
   Serial.println("[Reset] Erasing provisioning data...");
   WiFiProv.endProvision();
   nvs_flash_erase();
   Serial.println("[Reset] Done. Restarting...");
   delay(3000);
-  ESP.restart();
+  rebootDevice();
 }
 
 void handleFactoryResetButton() {
@@ -257,6 +288,7 @@ void handleFactoryResetButton() {
   static bool resetTriggeredForThisHold = false;
 
   if (rawState != lastRawState) {
+    // Raw transition observed; start debounce timing window.
     lastRawState = rawState;
     lastChangeMs = nowMs;
   }
@@ -281,17 +313,15 @@ void handleFactoryResetButton() {
       gButtonPressStartMs = nowMs;
       resetTriggeredForThisHold = false;
     } else if (!resetTriggeredForThisHold && (nowMs - gButtonPressStartMs >= kFactoryResetLongPressMs)) {
-      // Button has been held long enough to trigger factory reset.
-      resetTriggeredForThisHold = true;
-      Serial.println("[Button] Long press detected. Factory reset...");
-      #if defined(LED_GPIO_NUM)
-        // Turn on ESP32 CAM LED
-        pinMode(LED_GPIO_NUM, OUTPUT);
-        digitalWrite(LED_GPIO_NUM, HIGH);
-        delay(100);
-        digitalWrite(LED_GPIO_NUM, LOW);
-    #endif
-      factoryResetProvisioning();
+      if(digitalRead(kFactoryResetButtonPin) == LOW) {
+        // Re-check raw pin before reset to reduce false positives.
+        // Button has been held long enough to trigger factory reset.
+        resetTriggeredForThisHold = true;
+        Serial.println("[Button] Long press detected. Factory reset...");
+        factoryResetProvisioning();
+      } else {
+        gButtonPressStartMs = 0;
+      }
     }
   } else {
     // Button released before timeout, so clear press tracking.
@@ -315,6 +345,8 @@ static bool loadWiFiCredentialsFromNvs(
   char *outSsid, size_t outSsidSize,
   char *outPass, size_t outPassSize
 ) {
+  // Helper kept for diagnostics/manual flows.
+  // Current sketch mostly relies on WiFi.begin() auto-loading credentials.
   if (!outSsid || outSsidSize == 0 || !outPass || outPassSize == 0) {
     Serial.println("[NVS] Invalid buffer parameters.");
     return false;
@@ -387,6 +419,8 @@ static bool loadWiFiCredentialsFromNvs(
 // If "sta.ssid" exists and has nonzero size, device is considered provisioned.
 // ------------------------------------------------------------
 static bool isDeviceProvisioned() {
+  // Minimal check: if SSID exists in Wi-Fi namespace, treat as provisioned.
+  // This avoids starting BLE provisioning every boot.
   nvs_handle_t nvsHandle;
   if (nvs_open("nvs.net80211", NVS_READONLY, &nvsHandle) != ESP_OK) return false;
 
@@ -428,9 +462,19 @@ void setup() {
   gButtonPressStartMs = 0;
 
   // Register a single callback to receive both Wi-Fi and provisioning events.
+  // Useful for tracing startup/provisioning flow without scattering logs.
   WiFi.onEvent(handleWiFiAndProvisioningEvent);
 
+  Serial.println("[Init] Waiting setup...");
+  const unsigned long pollIntervalMs = 200;
+  const int startupPollRetries = 30;
+  for (int retry = 0; retry < startupPollRetries; ++retry) {
+    handleFactoryResetButton();
+    delay(pollIntervalMs);
+  }
+
   // Initialize NVS flash storage.
+  // Required for both provisioning library and saved Wi-Fi credentials.
   nvs_flash_init();
 
   // If device has not been provisioned yet, start BLE provisioning mode.
@@ -452,9 +496,8 @@ void setup() {
     WiFiProv.printQR(kProvisioningBleServiceName, kProvisioningPop, "ble");
 
     #if defined(LED_GPIO_NUM)
-
+      // Low-brightness LED = provisioning state indicator.
       analogWrite(LED_GPIO_NUM, 1); // dim LED to indicate provisioning mode
-    
     #endif
 
     // Return here because provisioning mode is now active.
@@ -474,11 +517,12 @@ void setup() {
 
   // Put Wi-Fi into station mode and connect using saved credentials from NVS.
   WiFi.mode(WIFI_STA);
+  // WiFi.begin() without args asks ESP-IDF to use credentials stored in NVS.
   WiFi.begin();
   
   WiFi.setSleep(false); // disable modem sleep for better responsiveness
 
-  // Retry Wi-Fi connection up to 20 times.
+  // Retry Wi-Fi connection up to 30 times.
   Serial.print("[WiFi] Connecting");
   int retries = 30;
   while (WiFi.status() != WL_CONNECTED) {
@@ -486,6 +530,7 @@ void setup() {
     Serial.print(".");
     retries--;
     if (retries <= 0) {
+      // Keep setup non-blocking forever: fail fast and allow possible watchdog-safe recovery.
       Serial.println();
       Serial.println("[WiFi] Connection timed out.");
       return;
@@ -507,6 +552,8 @@ void setup() {
 
   // Start mDNS so the device can be reached by hostname on local network.
   if (!MDNS.begin("myeye")) {
+    // mDNS is optional; if it fails, sketch currently aborts server start.
+    // Change to warning-only if you want IP-only access fallback.
     Serial.println("[mDNS] Failed to start responder.");
     return;
   }
@@ -530,8 +577,6 @@ void setup() {
 // Runs continuously after setup() finishes.
 // ------------------------------------------------------------
 void loop() {
-  // Poll the factory reset button periodically.
-  handleFactoryResetButton();
 
   // Small delay to reduce CPU usage and debounce simple button handling.
   delay(200);
