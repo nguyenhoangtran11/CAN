@@ -162,5 +162,5 @@
     <string name="error_get_scan_list">Failed to get thread scan list</string>
     <string name="error_wifi_scan_list">Failed to get Wi-Fi scan list</string>
     <string name="error_ble_scanning_code">BLE scanning failed with error code</string>
-
+    <string name="btn_check_connection_device">Connect device</string>
 </resources>

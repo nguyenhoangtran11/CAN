@@ -261,6 +261,19 @@ void rebootDevice() {
   ESP.restart();
 }
 
+void signalConnectionOk() {
+  // Quick LED blink pattern to indicate successful network connection.
+  #if defined(LED_GPIO_NUM)
+    pinMode(LED_GPIO_NUM, OUTPUT);
+    for (int i = 0; i < 3; ++i) {
+      digitalWrite(LED_GPIO_NUM, HIGH);
+      delay(120);
+      digitalWrite(LED_GPIO_NUM, LOW);
+      delay(120);
+    }
+  #endif
+}
+
 // ------------------------------------------------------------
 // Provisioning reset helpers
 // ------------------------------------------------------------
@@ -453,6 +466,7 @@ void setup() {
   Serial.begin(115200);
   while (!Serial) { delay(10); }
   Serial.flush();
+  Serial.println("[Init] ESP32 startup done.");
 
   // BOOT button uses internal pull-up resistor.
   pinMode(kFactoryResetButtonPin, INPUT_PULLUP);
@@ -480,6 +494,7 @@ void setup() {
   // If device has not been provisioned yet, start BLE provisioning mode.
   if (!isDeviceProvisioned()) {
     Serial.println("[Init] Device not provisioned. Starting BLE provisioning...");
+    Serial.println("[BLE] Initialization start");
 
     WiFiProv.beginProvision(
       NETWORK_PROV_SCHEME_BLE,                 // BLE transport
@@ -491,6 +506,8 @@ void setup() {
       kProvisioningBleServiceUuid,             // optional custom service UUID
       kForceResetProvisioningDataOnStart       // optionally clear old provisioning data
     );
+
+    Serial.println("[BLE] Initialization end");
 
     // Print a QR code payload to serial for the provisioning app.
     WiFiProv.printQR(kProvisioningBleServiceName, kProvisioningPop, "ble");
@@ -510,10 +527,13 @@ void setup() {
   // 3. Connect to Wi-Fi
   // 4. Start mDNS
   // 5. Start camera web server
+  Serial.println("[Camera] Initializing...");
   initializeCamera();
+  Serial.println("[Camera] Initialization complete.");
 
   Serial.println("[Init] Provisioned. Connecting to saved Wi-Fi...");
   Serial.println("[Hint] Hold BOOT for 3s to reset provisioning.");
+  Serial.println("[WiFi] Start");
 
   // Put Wi-Fi into station mode and connect using saved credentials from NVS.
   WiFi.mode(WIFI_STA);
@@ -549,6 +569,8 @@ void setup() {
   }
 
   Serial.println("[WiFi] Connected");
+  Serial.println("[WiFi] End");
+  signalConnectionOk();
 
   // Start mDNS so the device can be reached by hostname on local network.
   if (!MDNS.begin("myeye")) {
@@ -568,7 +590,8 @@ void setup() {
   startCameraServer();
   Serial.print("[CameraServer] Started. Access at: http://");
   Serial.println(WiFi.localIP());
-  Serial.println("[CameraServer] mDNS URL: http://myeye.local");
+  Serial.println("[CameraServer] mDNS URL: http://myeye");
+  
 
 }
 

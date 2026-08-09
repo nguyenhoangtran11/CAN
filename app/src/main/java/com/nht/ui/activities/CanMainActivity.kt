@@ -39,8 +39,12 @@ import com.nht.provisioning.CanProvisionManager
 import com.nht.wifi_provisioning.BuildConfig
 import com.nht.wifi_provisioning.R
 import com.nht.wifi_provisioning.databinding.ActivityEspMainBinding
+import com.nht.service.ESP32CamDiscoverer
+import android.webkit.WebView
 
 class CanMainActivity : AppCompatActivity() {
+    private var discoverer: ESP32CamDiscoverer? = null
+    private lateinit var streamWebView: WebView
 
     companion object {
         private val TAG: String = CanMainActivity::class.java.simpleName
@@ -68,6 +72,17 @@ class CanMainActivity : AppCompatActivity() {
 
         sharedPreferences = getSharedPreferences(AppConstants.ESP_PREFERENCES, MODE_PRIVATE)
         provisionManager = CanProvisionManager.getInstance(applicationContext)
+
+        // Initialize Java class and utilize Kotlin Trailing Lambda syntax directly
+        discoverer = ESP32CamDiscoverer(this) { ipAddress, port ->
+            // Update UI/WebView tasks on the Main UI thread
+            runOnUiThread {
+                Log.d("CanMainActivity", "Found Java Discovery IP: $ipAddress on port $port")
+                //startStream(ipAddress, port)
+            }
+        }
+
+        discoverer?.startDiscovery()
     }
 
     override fun onResume() {

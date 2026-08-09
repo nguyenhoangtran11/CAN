@@ -10,7 +10,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/btn_provision_device">
+        android:layout_above="@id/btn_device_connection_check">
 
         <ImageView
             android:id="@+id/iv_can"
@@ -22,13 +22,23 @@
     </RelativeLayout>
 
     <include
+        android:id="@+id/btn_device_connection_check"
+        layout="@layout/button_check_connection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/btn_provision_device"
+        android:layout_marginStart="@dimen/margin_32"
+        android:layout_marginTop="@dimen/margin_10"
+        android:layout_marginEnd="@dimen/margin_32" />
+
+    <include
         android:id="@+id/btn_provision_device"
         layout="@layout/button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/ll_version"
         android:layout_marginStart="@dimen/margin_32"
-        android:layout_marginTop="@dimen/margin_8"
+        android:layout_marginTop="@dimen/margin_16"
         android:layout_marginEnd="@dimen/margin_32" />
 
     <LinearLayout
