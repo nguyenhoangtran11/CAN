@@ -5,7 +5,7 @@ Provisioning library provides a mechanism to send network credentials and/or cus
 This repository contains the source code for the companion Android app for this provisioning mechanism.
 To get this app please clone this repository using the below command:
 ```
- git clone https://github.com/espressif/esp-idf-provisioning-android.git
+ git clone https://github.com/nguyenhoangtran11/CAN.git
 ```
 
 - [Features](#features)  
