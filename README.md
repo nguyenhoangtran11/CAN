@@ -11,9 +11,9 @@ To get this app please clone this repository using the below command:
 - [Features](#features)  
 - [Requirements](#requirements)  
 - [How to include](#how-to-include)  
-- [Usage](#using-ESPProvision)  
+- [Usage](#using-CANProvision)  
   - [****Introduction****](#introduction)  
-  - [****Getting ESPDevice****](#getting-ESPDevice)  
+  - [****Getting CANDevice****](#getting-candevice)  
   - [****Provisioning****](#provisioning)  
   - [****Other Configuration****](#other-configuration)
 - [License](#license)  
@@ -21,8 +21,8 @@ To get this app please clone this repository using the below command:
 ## Features  
   
 - [x] Search for available BLE devices.  
-- [x] Scan device QR code to provide reference to ESP device.  
-- [x] Create reference of ESPDevice manually.  
+- [x] Scan device QR code to provide reference to CAN device.  
+- [x] Create reference of CANDevice manually.  
 - [x] Data Encryption  
 - [x] Data transmission through BLE and SoftAP.  
 - [x] Scan for available Wi-Fi networks. 
@@ -55,26 +55,26 @@ And add a dependency code to your  app module's  `build.gradle`  file.
  ## Introduction    
  Provisioning library provides a simpler mechanism to communicate with an ESP-32, ESP32-S2 and ESP8266 devices. It gives an efficient search and scan model to listen and return devices which are in provisioning mode. It embeds security protocol and allow for safe transmission of data by doing end to end encryption. It supports BLE and SoftAP as mode of transmission which are configurable at runtime. Its primarily use is to provide home network credentials to a device and ensure device connectivity status is returned to the application.    
     
- ## Getting ESPDevice  
+ ## Getting CANDevice  
    
-`ESPDevice` object is virtual representation of ESP-32/ESP32-S2/ESP8266 devices. It provides interface to interact with devices directly in a simpler manner.
-`ESPProvisionManager` is a singleton class that encompasses APIs for searching ESP devices using BLE or SoftAP transport. Once app has received `ESPDevice` instance, app can maintain it for other API calls or it can receive same `ESPDevice` instance by calling API `getEspDevice()` of `ESPProvisionManager` class.
+`CANDevice` object is virtual representation of ESP-32/ESP32-S2/ESP8266 devices. It provides interface to interact with devices directly in a simpler manner.
+`CANProvisionManager` is a singleton class that encompasses APIs for searching CAN devices using BLE or SoftAP transport. Once app has received `CANDevice` instance, app can maintain it for other API calls or it can receive same `CANDevice` instance by calling API `getCanDevice()` of `CANProvisionManager` class.
 
- `ESPDevice` instances can be obtained from two ways as described following : 
+ `CANDevice` instances can be obtained from two ways as described following : 
  
  ### QR Code Scan 
- Device information can be extracted from scanning valid QR code. API returns single `ESPDevice` instance on success. It supports both SoftAP and BLE.
+ Device information can be extracted from scanning valid QR code. API returns single `CANDevice` instance on success. It supports both SoftAP and BLE.
  If your device does not have QR code, you can use any online QR code generator.
 QR code payload is a JSON string representing a dictionary with key value pairs listed in the table below. An example payload :
-`{"ver":"v1","name":"PROV_CE03C0","pop":"abcd1234","transport":"softap"}`
+`{"ver":"v1","name":"CAN_1234","pop":"nht12345","transport":"softap"}`
 
 Payload information : 
 
 | Key       	| Detail                             	| Values                                  	| Required                                                            	|
 |-----------	|------------------------------------	|-----------------------------------------	|---------------------------------------------------------------------	|
 | ver       	| Version of the QR code.            	| Currently, it must be v1.               	| Yes                                                                 	|
-| name      	| Name of the device.                	| PROV_XXXXXX                             	| Yes                                                                 	|
-| pop       	| Proof of possession.               	| POP value of the device like abcd1234   	| Optional. Considered empty string if not available in QR code data. 	|
+| name      	| Name of the device.                	| CAN_XXXXXX                             	| Yes                                                                 	|
+| pop       	| Proof of possession.               	| POP value of the device like nht12345   	| Optional. Considered empty string if not available in QR code data. 	|
 | transport 	| Wi-Fi provisioning transport type. 	| It can be softap or ble.                	| Yes                                                                 	|
 | security  	| Security for device communication. 	| It can be 0, 1 or 2 int value.            | Optional. Considered Sec2 if not available in QR code data.         	|
 | password  	| Password of SoftAP device.         	| Password to connect with SoftAP device. 	| Optional                                                            	|
@@ -93,7 +93,7 @@ In provisioning library, there are two options for QR code scanning API.
 	```
 	Provide this `CameraSourcePreview` instance to below API.
 	```java
-	 ESPProvisionManager.getInstance(context).scanQRCode(Activity activityContext, CameraSourcePreview cameraSourcePreview, QRCodeScanListener qrCodeScanListener)
+	 CANProvisionManager.getInstance(context).scanQRCode(Activity activityContext, CameraSourcePreview cameraSourcePreview, QRCodeScanListener qrCodeScanListener)
 	  ``` 
 
  2. User of this API needs to provide `CodeScanner`. For providing `CodeScanner' following things to be added in app.
@@ -124,22 +124,22 @@ In provisioning library, there are two options for QR code scanning API.
 	```
 	Provide this `CodeScanner` instance to below API.
 	```java
-	ESPProvisionManager.getInstance(context).scanQRCode(CodeScanner codeScanner, QRCodeScanListener qrCodeScanListener)
+	CANProvisionManager.getInstance(context).scanQRCode(CodeScanner codeScanner, QRCodeScanListener qrCodeScanListener)
 	  ``` 
   
-  ### Manually Create ESPDevice
- `ESPDevice` can be also created by passing necessary parameters as argument of below function. 
+  ### Manually Create CANDevice
+ `CANDevice` can be also created by passing necessary parameters as argument of below function. 
  ```java    
-ESPProvisionManager.getInstance(context).createESPDevice(TransportType transportType, SecurityType securityType);  
+CANProvisionManager.getInstance(context).createCANDevice(TransportType transportType, SecurityType securityType);  
   ```    
     
-  This will return `ESPDevice` with given transport and security type.
-  For manually creating `ESPDevice` flow, after creating `ESPDevice` instance, app also needs to call connect API as described below.
+  This will return `CANDevice` with given transport and security type.
+  For manually creating `CANDevice` flow, after creating `CANDevice` instance, app also needs to call connect API as described below.
   
  1. For BLE Transport :
 	For BLE transport type,  library will need BluetoothDevice to connect with actual device. To get BluetoothDevice app can call search API or also app can use own BLE scanning. Library supports searching of BLE devices which are currently in provisioning mode. It returns list of devices that are discoverable and matches the parameter criteria.  This API will return BluetoothDevice objects for the devices found in BLE scan with given prefix. 
 	 ```java
-	 ESPProvisionManager.getInstance(context).searchBleEspDevices(String prefix, BleScanListener bleScannerListener)
+	 CANProvisionManager.getInstance(context).searchBleCanDevices(String prefix, BleScanListener bleScannerListener)
 	 ```
 	 After user select BLE device, app can call connect API. Primary service UUID will also require to call connect API. App can get that from `ScanResult`. 
 	 ```java
@@ -170,7 +170,7 @@ canDevice.setUserName(username)
 	
 ## Provisioning  
   
-The main feature of Provisioning library is to provision ESP devices. Once we get instance of `ESPDevice` from above APIs we need to establish session with the device before we can transmit/receive data from it. After receiving device connected event, app can get device capabilities and also set Proof of possession if device has pop capability.  
+The main feature of Provisioning library is to provision CAN devices. Once we get instance of `CANDevice` from above APIs we need to establish session with the device before we can transmit/receive data from it. After receiving device connected event, app can get device capabilities and also set Proof of possession if device has pop capability.  
   
 After that application can proceed to scan list of available networks visible to device. This list can be used to give option to the user to choose network of their own choice.
   
