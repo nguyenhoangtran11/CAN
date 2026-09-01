@@ -2,6 +2,7 @@
 #include "WiFiProv.h"
 #include "nvs_flash.h"
 #include "esp_camera.h"
+#include "esp_timer.h"
 #include "board_config.h"
 #include <ESPmDNS.h>
 
@@ -94,6 +95,11 @@ void handleWiFiAndProvisioningEvent(arduino_event_t *event) {
       Serial.println(IPAddress(event->event_info.got_ip.ip_info.ip.addr));
       break;
 
+    case ARDUINO_EVENT_WIFI_STA_CONNECTED:
+      // STA authentication/association completed.
+      Serial.printf("[WiFi][Auth] End\n");
+      break;
+
     case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
       // Station disconnected from the AP.
       // ESP32 Wi-Fi stack may reconnect automatically depending on settings.
@@ -114,6 +120,7 @@ void handleWiFiAndProvisioningEvent(arduino_event_t *event) {
       Serial.println((const char *)event->event_info.prov_cred_recv.ssid);
       Serial.print("  Password: ");
       Serial.println((const char *)event->event_info.prov_cred_recv.password);
+      Serial.println("[Prov][InvalidPassword] Handling start");
       break;
 
     case ARDUINO_EVENT_PROV_CRED_FAIL:
@@ -122,6 +129,7 @@ void handleWiFiAndProvisioningEvent(arduino_event_t *event) {
       Serial.println("[Prov] Provisioning failed.");
       if (event->event_info.prov_fail_reason == NETWORK_PROV_WIFI_STA_AUTH_ERROR) {
         Serial.println("[Prov] Reason: Incorrect Wi-Fi password.");
+        Serial.println("[Prov][InvalidPassword] Handling end");
       } else {
         Serial.println("[Prov] Reason: Access point not found.");
         Serial.println("[Prov] Tip: erase NVS before beginProvision().");
@@ -272,6 +280,35 @@ void signalConnectionOk() {
       delay(120);
     }
   #endif
+}
+
+float measureAverageFrameCaptureTimeMs(int sampleCount = 10, int warmupCount = 2) {
+  if (sampleCount <= 0) return -1.0f;
+
+  // Warm-up frames so sensor/exposure pipeline is stabilized.
+  for (int i = 0; i < warmupCount; ++i) {
+    camera_fb_t *warmupFb = esp_camera_fb_get();
+    if (!warmupFb) return -1.0f;
+    esp_camera_fb_return(warmupFb);
+  }
+
+  int successfulSamples = 0;
+  int64_t totalCaptureTimeUs = 0;
+
+  for (int i = 0; i < sampleCount; ++i) {
+    int64_t t0 = esp_timer_get_time();
+    camera_fb_t *fb = esp_camera_fb_get();
+    int64_t t1 = esp_timer_get_time();
+
+    if (!fb) continue;
+
+    totalCaptureTimeUs += (t1 - t0);
+    successfulSamples++;
+    esp_camera_fb_return(fb);
+  }
+
+  if (successfulSamples == 0) return -1.0f;
+  return (float)totalCaptureTimeUs / 1000.0f / successfulSamples;
 }
 
 // ------------------------------------------------------------
@@ -495,6 +532,7 @@ void setup() {
   if (!isDeviceProvisioned()) {
     Serial.println("[Init] Device not provisioned. Starting BLE provisioning...");
     Serial.println("[BLE] Initialization start");
+    Serial.println("[BLE] Starting BLE advertising...");
 
     WiFiProv.beginProvision(
       NETWORK_PROV_SCHEME_BLE,                 // BLE transport
@@ -507,6 +545,7 @@ void setup() {
       kForceResetProvisioningDataOnStart       // optionally clear old provisioning data
     );
 
+    Serial.println("[BLE] BLE advertising started. Waiting for provisioning app...");
     Serial.println("[BLE] Initialization end");
 
     // Print a QR code payload to serial for the provisioning app.
@@ -531,6 +570,13 @@ void setup() {
   initializeCamera();
   Serial.println("[Camera] Initialization complete.");
 
+  float avgCaptureMs = measureAverageFrameCaptureTimeMs(10, 2);
+  if (avgCaptureMs > 0.0f) {
+    Serial.printf("[Camera] Avg frame capture time: %.2f ms (~%.2f FPS)\n", avgCaptureMs, 1000.0f / avgCaptureMs);
+  } else {
+    Serial.println("[Camera] Frame capture timing failed (no frame).");
+  }
+
   Serial.println("[Init] Provisioned. Connecting to saved Wi-Fi...");
   Serial.println("[Hint] Hold BOOT for 3s to reset provisioning.");
   Serial.println("[WiFi] Start");
@@ -538,7 +584,9 @@ void setup() {
   // Put Wi-Fi into station mode and connect using saved credentials from NVS.
   WiFi.mode(WIFI_STA);
   // WiFi.begin() without args asks ESP-IDF to use credentials stored in NVS.
+  Serial.println("[WiFi][Auth] Start");
   WiFi.begin();
+  Serial.println("[WiFi][IP] Assignment start (DHCP)...");
   
   WiFi.setSleep(false); // disable modem sleep for better responsiveness
 
@@ -569,6 +617,8 @@ void setup() {
   }
 
   Serial.println("[WiFi] Connected");
+  Serial.print("[WiFi][IP] Assignment end. IP: ");
+  Serial.println(WiFi.localIP());
   Serial.println("[WiFi] End");
   signalConnectionOk();
 

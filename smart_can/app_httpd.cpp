@@ -39,11 +39,15 @@ typedef struct {
   size_t len;
 } jpg_chunking_t;
 
+// Multipart MJPEG response metadata.
 #define PART_BOUNDARY "123456789000000000000987654321"
 static const char *_STREAM_CONTENT_TYPE = "multipart/x-mixed-replace;boundary=" PART_BOUNDARY;
 static const char *_STREAM_BOUNDARY = "\r\n--" PART_BOUNDARY "\r\n";
 static const char *_STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %u\r\nX-Timestamp: %d.%06d\r\n\r\n";
 
+// Two HTTP server instances:
+// - camera_httpd: control/status/snapshot endpoints
+// - stream_httpd: dedicated MJPEG stream endpoint
 httpd_handle_t stream_httpd = NULL;
 httpd_handle_t camera_httpd = NULL;
 
@@ -57,6 +61,7 @@ typedef struct {
 
 static ra_filter_t ra_filter;
 
+// Initialize running-average filter storage.
 static ra_filter_t *ra_filter_init(ra_filter_t *filter, size_t sample_size) {
   memset(filter, 0, sizeof(ra_filter_t));
 
@@ -71,6 +76,7 @@ static ra_filter_t *ra_filter_init(ra_filter_t *filter, size_t sample_size) {
 }
 
 #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+// Push one sample into running-average filter and return current average.
 static int ra_filter_run(ra_filter_t *filter, int value) {
   if (!filter->values) {
     return value;
@@ -90,6 +96,7 @@ static int ra_filter_run(ra_filter_t *filter, int value) {
 #if defined(LED_GPIO_NUM)
 void enable_led(bool en) {  // Turn LED On or Off
   int duty = en ? led_duty : 0;
+  // Cap intensity during stream to avoid excessive brightness/current.
   if (en && isStreaming && (led_duty > CONFIG_LED_MAX_INTENSITY)) {
     duty = CONFIG_LED_MAX_INTENSITY;
   }
@@ -101,6 +108,7 @@ void enable_led(bool en) {  // Turn LED On or Off
 #endif
 
 static esp_err_t bmp_handler(httpd_req_t *req) {
+  // Capture one frame and return it as BMP.
   camera_fb_t *fb = NULL;
   esp_err_t res = ESP_OK;
 #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
@@ -140,6 +148,7 @@ static esp_err_t bmp_handler(httpd_req_t *req) {
 }
 
 static size_t jpg_encode_stream(void *arg, size_t index, const void *data, size_t len) {
+  // Callback used by frame2jpg_cb to stream JPEG data in chunks.
   jpg_chunking_t *j = (jpg_chunking_t *)arg;
   if (!index) {
     j->len = 0;
@@ -152,6 +161,7 @@ static size_t jpg_encode_stream(void *arg, size_t index, const void *data, size_
 }
 
 static esp_err_t capture_handler(httpd_req_t *req) {
+  // Capture one frame and return it as JPEG.
   camera_fb_t *fb = NULL;
   esp_err_t res = ESP_OK;
 #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
@@ -159,6 +169,7 @@ static esp_err_t capture_handler(httpd_req_t *req) {
 #endif
 
 #if defined(LED_GPIO_NUM)
+  // Enable flash slightly before capture so exposure includes illumination.
   enable_led(true);
   vTaskDelay(150 / portTICK_PERIOD_MS);  // The LED needs to be turned on ~150ms before the call to esp_camera_fb_get()
   fb = esp_camera_fb_get();              // or it won't be visible in the frame. A better way to do this is needed.
@@ -190,6 +201,7 @@ static esp_err_t capture_handler(httpd_req_t *req) {
 #endif
     res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
   } else {
+    // Convert non-JPEG frame buffers to JPEG on-the-fly.
     jpg_chunking_t jchunk = {req, 0};
     res = frame2jpg_cb(fb, 80, jpg_encode_stream, &jchunk) ? ESP_OK : ESP_FAIL;
     httpd_resp_send_chunk(req, NULL, 0);
@@ -206,6 +218,7 @@ static esp_err_t capture_handler(httpd_req_t *req) {
 }
 
 static esp_err_t stream_handler(httpd_req_t *req) {
+  // Continuous MJPEG stream handler.
   camera_fb_t *fb = NULL;
   struct timeval _timestamp;
   esp_err_t res = ESP_OK;
@@ -227,19 +240,41 @@ static esp_err_t stream_handler(httpd_req_t *req) {
   httpd_resp_set_hdr(req, "X-Framerate", "60");
 
 #if defined(LED_GPIO_NUM)
+  // Keep LED on while streaming if enabled by user.
   isStreaming = true;
   enable_led(true);
 #endif
 
+  // Log raw capture duration only for first frames (startup diagnostics).
+  int count_max = 10;
+  int cnt = 0;
+
   while (true) {
+    cnt++;
+    int64_t cap_start = 0;
+    if (cnt < count_max + 1) {
+      cap_start = esp_timer_get_time();
+    }
+
     fb = esp_camera_fb_get();
+    if (cnt < count_max + 1) {
+      int64_t cap_end = esp_timer_get_time();
+      printf("Capture: %ums\t", (uint32_t)((cap_end - cap_start) / 1000));
+    }
+
     if (!fb) {
       log_e("Camera capture failed");
       res = ESP_FAIL;
     } else {
+      
       _timestamp.tv_sec = fb->timestamp.tv_sec;
       _timestamp.tv_usec = fb->timestamp.tv_usec;
+      cap_start = 0;
+      if (cnt < count_max + 1) {
+        cap_start = esp_timer_get_time();
+      }
       if (fb->format != PIXFORMAT_JPEG) {
+        // Compress to JPEG when camera output format is not JPEG.
         bool jpeg_converted = frame2jpg(fb, 80, &_jpg_buf, &_jpg_buf_len);
         esp_camera_fb_return(fb);
         fb = NULL;
@@ -251,16 +286,30 @@ static esp_err_t stream_handler(httpd_req_t *req) {
         _jpg_buf_len = fb->len;
         _jpg_buf = fb->buf;
       }
+      if (cnt < count_max + 1) {
+        int64_t cap_end = esp_timer_get_time();
+        printf("frame2jpg: %ums\t", (uint32_t)((cap_end - cap_start) / 1000));
+      }
+    }
+    cap_start = 0;
+    if (cnt < count_max + 1) {
+      cap_start = esp_timer_get_time();
     }
     if (res == ESP_OK) {
+      // Multipart boundary between frames.
       res = httpd_resp_send_chunk(req, _STREAM_BOUNDARY, strlen(_STREAM_BOUNDARY));
     }
     if (res == ESP_OK) {
+      // Per-frame MIME headers.
       size_t hlen = snprintf((char *)part_buf, 128, _STREAM_PART, _jpg_buf_len, _timestamp.tv_sec, _timestamp.tv_usec);
       res = httpd_resp_send_chunk(req, (const char *)part_buf, hlen);
     }
     if (res == ESP_OK) {
       res = httpd_resp_send_chunk(req, (const char *)_jpg_buf, _jpg_buf_len);
+    }
+    if (cnt < count_max + 1) {
+      int64_t cap_end = esp_timer_get_time();
+      printf("httpd_resp_send_chunk: %ums\t", (uint32_t)((cap_end - cap_start) / 1000));
     }
     if (fb) {
       esp_camera_fb_return(fb);
@@ -281,12 +330,10 @@ static esp_err_t stream_handler(httpd_req_t *req) {
 
     frame_time /= 1000;
 #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+    // Smoothed frame-time for stable FPS logs.
     uint32_t avg_frame_time = ra_filter_run(&ra_filter, frame_time);
 #endif
-    log_i(
-      "MJPG: %uB %ums (%.1ffps), AVG: %ums (%.1ffps)", (uint32_t)(_jpg_buf_len), (uint32_t)frame_time, 1000.0 / (uint32_t)frame_time, avg_frame_time,
-      1000.0 / avg_frame_time
-    );
+    log_i("MJPG: %uB %ums (%.2ffps)", (uint32_t)(_jpg_buf_len), (uint32_t)frame_time, 1000.0f / (float)avg_frame_time);
   }
 
 #if defined(LED_GPIO_NUM)
@@ -298,6 +345,7 @@ static esp_err_t stream_handler(httpd_req_t *req) {
 }
 
 static esp_err_t parse_get(httpd_req_t *req, char **obuf) {
+  // Read full URL query string; caller must free(*obuf).
   char *buf = NULL;
   size_t buf_len = 0;
 
@@ -319,6 +367,7 @@ static esp_err_t parse_get(httpd_req_t *req, char **obuf) {
 }
 
 static esp_err_t cmd_handler(httpd_req_t *req) {
+  // Generic sensor control endpoint: /control?var=<name>&val=<value>
   char *buf = NULL;
   char variable[32];
   char value[32];
@@ -391,6 +440,7 @@ static esp_err_t cmd_handler(httpd_req_t *req) {
   }
 #if defined(LED_GPIO_NUM)
   else if (!strcmp(variable, "led_intensity")) {
+    // Update flash intensity at runtime.
     led_duty = val;
     if (isStreaming) {
       enable_led(true);
@@ -411,10 +461,12 @@ static esp_err_t cmd_handler(httpd_req_t *req) {
 }
 
 static int print_reg(char *p, sensor_t *s, uint16_t reg, uint32_t mask) {
+  // Helper for status JSON register dump.
   return sprintf(p, "\"0x%x\":%u,", reg, s->get_reg(s, reg, mask));
 }
 
 static esp_err_t status_handler(httpd_req_t *req) {
+  // Return sensor/camera state in JSON form.
   static char json_response[1024];
 
   sensor_t *s = esp_camera_sensor_get();
@@ -490,6 +542,7 @@ static esp_err_t status_handler(httpd_req_t *req) {
 }
 
 static esp_err_t xclk_handler(httpd_req_t *req) {
+  // Set external camera clock (MHz): /xclk?xclk=<mhz>
   char *buf = NULL;
   char _xclk[32];
 
@@ -517,6 +570,7 @@ static esp_err_t xclk_handler(httpd_req_t *req) {
 }
 
 static esp_err_t reg_handler(httpd_req_t *req) {
+  // Write sensor register: /reg?reg=<r>&mask=<m>&val=<v>
   char *buf = NULL;
   char _reg[32];
   char _mask[32];
@@ -549,6 +603,7 @@ static esp_err_t reg_handler(httpd_req_t *req) {
 }
 
 static esp_err_t greg_handler(httpd_req_t *req) {
+  // Read sensor register: /greg?reg=<r>&mask=<m>
   char *buf = NULL;
   char _reg[32];
   char _mask[32];
@@ -579,6 +634,7 @@ static esp_err_t greg_handler(httpd_req_t *req) {
 }
 
 static int parse_get_var(char *buf, const char *key, int def) {
+  // Read integer query value with default fallback.
   char _int[16];
   if (httpd_query_key_value(buf, key, _int, sizeof(_int)) != ESP_OK) {
     return def;
@@ -587,6 +643,7 @@ static int parse_get_var(char *buf, const char *key, int def) {
 }
 
 static esp_err_t pll_handler(httpd_req_t *req) {
+  // Advanced PLL tuning endpoint.
   char *buf = NULL;
 
   if (parse_get(req, &buf) != ESP_OK) {
@@ -615,6 +672,7 @@ static esp_err_t pll_handler(httpd_req_t *req) {
 }
 
 static esp_err_t win_handler(httpd_req_t *req) {
+  // Advanced raw windowing/resolution endpoint.
   char *buf = NULL;
 
   if (parse_get(req, &buf) != ESP_OK) {
@@ -650,6 +708,7 @@ static esp_err_t win_handler(httpd_req_t *req) {
 }
 
 static esp_err_t index_handler(httpd_req_t *req) {
+  // Serve compressed UI page selected by camera sensor model.
   httpd_resp_set_type(req, "text/html");
   httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
   sensor_t *s = esp_camera_sensor_get();
@@ -668,6 +727,7 @@ static esp_err_t index_handler(httpd_req_t *req) {
 }
 
 void startCameraServer() {
+  // Start control server and stream server on consecutive ports.
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();
   config.max_uri_handlers = 16;
 
@@ -841,6 +901,7 @@ void startCameraServer() {
 
 void setupLedFlash() {
 #if defined(LED_GPIO_NUM)
+  // Configure LEDC PWM channel for flash brightness control.
   ledcAttach(LED_GPIO_NUM, 5000, 8);
 #else
   log_i("LED flash is disabled -> LED_GPIO_NUM undefined");

@@ -46,7 +46,7 @@ To get this app please clone this repository using the below command:
 	 }
  }
  ```
-And add a dependency code to your  app module's  `build.gradle`  file. 
+And add a dependency code to your  app module's  `build.gradle`  file. `
 ```  
  implementation 'com.github.espressif:esp-idf-provisioning-android:lib-1.0.0'
 ```
@@ -66,7 +66,7 @@ And add a dependency code to your  app module's  `build.gradle`  file.
  Device information can be extracted from scanning valid QR code. API returns single `CANDevice` instance on success. It supports both SoftAP and BLE.
  If your device does not have QR code, you can use any online QR code generator.
 QR code payload is a JSON string representing a dictionary with key value pairs listed in the table below. An example payload :
-`{"ver":"v1","name":"CAN_1234","pop":"nht12345","transport":"softap"}`
+`{"ver":"v1","name":"CAN_123","pop":"nht12345","transport":"softap"}`
 
 Payload information : 
 
@@ -130,8 +130,8 @@ In provisioning library, there are two options for QR code scanning API.
   ### Manually Create CANDevice
  `CANDevice` can be also created by passing necessary parameters as argument of below function. 
  ```java    
-CANProvisionManager.getInstance(context).createCANDevice(TransportType transportType, SecurityType securityType);  
-  ```    
+CANProvisionManager.getInstance(context).createCANDevice(TransportType transportType, SecurityType securityType);
+  ```
     
   This will return `CANDevice` with given transport and security type.
   For manually creating `CANDevice` flow, after creating `CANDevice` instance, app also needs to call connect API as described below.
@@ -170,7 +170,7 @@ canDevice.setUserName(username)
 	
 ## Provisioning  
   
-The main feature of Provisioning library is to provision CAN devices. Once we get instance of `CANDevice` from above APIs we need to establish session with the device before we can transmit/receive data from it. After receiving device connected event, app can get device capabilities and also set Proof of possession if device has pop capability.  
+The main feature of Provisioning library is to provision CAN devices. Once we get instance of `CANDevice` from above APIs we need to establish session with the device before we can transmit/receive data from it. After receiving device connected event, app can get device capabilities and also set Proof of possession if device has pop capability.
   
 After that application can proceed to scan list of available networks visible to device. This list can be used to give option to the user to choose network of their own choice.
   
