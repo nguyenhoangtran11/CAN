@@ -1,0 +1,27 @@
+class_id,class_name,train,valid,test,total
+0,Bike,323,95,49,467
+1,Building,886,101,54,1041
+2,Car,4328,1003,247,5578
+3,Person,7609,1033,320,8962
+4,Stairs,1125,339,223,1687
+5,Traffic sign,689,114,104,907
+6,Electrical Pole,491,85,42,618
+7,Road,561,84,37,682
+8,Motorcycle,888,82,37,1007
+9,Dustbin,1351,153,45,1549
+10,Dog,633,65,30,728
+11,Manhole,1779,480,242,2501
+12,Tree,1632,293,150,2075
+13,Guard rail,1385,131,69,1585
+14,Pedestrian crosswalk,1875,429,189,2493
+15,Truck,621,159,43,823
+16,Bus,1009,150,55,1214
+17,Bench,706,40,28,774
+18,Traffic Cone,678,171,92,941
+19,Fire hydrant,205,25,25,255
+20,Teraffic Barrel,540,17,19,576
+21,Plant Pot,560,37,34,631
+22,Electrical Box,450,29,34,513
+23,Chair,1757,419,168,2344
+24,Bicycle Rack,170,38,36,244
+,TOTAL,32251,5572,2372,40195
